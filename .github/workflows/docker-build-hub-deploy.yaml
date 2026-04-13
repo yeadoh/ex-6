@@ -17,7 +17,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: 빌드랑 푸시
+      - name: 도커 파일로 빌드 및 Push 진행
         uses: docker/build-push-action@v5
         with:
           context: .  # context 뒤에 콜론 추가
