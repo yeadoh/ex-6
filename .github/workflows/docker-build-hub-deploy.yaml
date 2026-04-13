@@ -1,0 +1,46 @@
+name: 도커 빌드
+
+on:
+  push:
+    branchse: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 체크아웃 코드
+        uses: actions/checkout@v4
+      - name: 도커 로그인
+        uses: docker/login-action@v3
+          username: ${{ secrets.DODKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        
+      - name: 빌드랑 푸시
+        uses: docker/build-push-action@v5
+        with:
+          context .
+          push:true
+          DOCKER_PASSWORD
+      # Aws 작격 증빙
+      - name: 자격 증빙 Backole
+        uses: aws-actions/configure-aws-credentials@v4
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
+        aws-region: ap-south-1
+      
+      - name: SSM 배포
+        run: |
+          aws ssm dend-command \
+            --instance-ids "${{ secrests.AWS_INSTANCE_ID}}"
+            --document-name "AWS-RunShellScript" \
+            --parameters 'command='[
+              "sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD}}",
+              "sudo docker stop nginx-container || ture",
+              "sudo docker rm nginx-containver || true ",
+              "sudo docker run -d --name nginx-container -p 80:80 ${{ secrets.DOCKER_USERNAME }}/${{ secrests.DOCKER_IMAGE }}:${{ secrests.DOCKER_IMAGE_TAG }}"
+            ]' \
+            --region ${{ secrests.AWS+_REGION}}
+
+
+        ${{secrests.DOCKER_USERNAME}}:/${{secrests.DOCKER_IMAGE}}:${{ DOCKER_IMAGE_TAG }}
